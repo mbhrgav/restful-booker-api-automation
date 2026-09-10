@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<suite name="Restful Booker Smoke Suite"
+       verbose="1"
+       parallel="false">
+
+    <parameter name="cucumber.filter.tags"
+               value="@smoke"/>
+
+    <test name="Smoke API Tests">
+        <classes>
+            <class name="com.restfulbooker.runner.TestRunner"/>
+        </classes>
+    </test>
+
+</suite>

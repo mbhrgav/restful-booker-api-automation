@@ -1,0 +1,27 @@
+# Maven generated files
+target/
+
+# TestNG generated reports
+test-output/
+
+# Compiled Java files
+*.class
+
+# IntelliJ IDEA
+.idea/
+*.iml
+
+# macOS generated files
+.DS_Store
+
+# Log files
+*.log
+
+# VS Code local files
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+
+# Temporary files
+*.tmp
+*.temp
