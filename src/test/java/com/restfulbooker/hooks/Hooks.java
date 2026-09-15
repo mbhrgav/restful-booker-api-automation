@@ -22,18 +22,30 @@ public class Hooks {
             return;
         }
 
-        scenario.log("Response status code: " + response.getStatusCode());
+        scenario.log(
+                "Response status code: " + response.getStatusCode()
+        );
 
         String responseBody = response.asString();
 
         if (responseBody == null || responseBody.isBlank()) {
             responseBody = "Response body was empty";
+        } else {
+            responseBody = maskSensitiveData(responseBody);
         }
 
         scenario.attach(
                 responseBody,
                 "text/plain",
                 "API Response"
+        );
+    }
+
+    private String maskSensitiveData(String responseBody) {
+
+        return responseBody.replaceAll(
+                "(?i)(\"(?:token|password)\"\\s*:\\s*\")[^\"]*(\")",
+                "$1********$2"
         );
     }
 }
