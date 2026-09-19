@@ -16,6 +16,7 @@ public class AuthClient {
                 .spec(RequestSpecificationFactory
                         .getDefaultRequestSpecification())
                 .body(authRequest)
+                .log().all()
                 .when()
                 .post(AUTH_ENDPOINT);
     }
