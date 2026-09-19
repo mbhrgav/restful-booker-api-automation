@@ -15,7 +15,7 @@ Feature: Create Booking API
     And the response should match the "create-booking-response-schema.json" JSON schema
 
     Examples:
-      | testCaseId | expectedStatus |
+      | testCaseId  | expectedStatus |
       | CB_DATA_001 | 200            |
       | CB_DATA_002 | 200            |
       | CB_DATA_003 | 200            |

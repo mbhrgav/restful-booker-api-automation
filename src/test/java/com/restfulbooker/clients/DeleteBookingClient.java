@@ -1,10 +1,11 @@
 package com.restfulbooker.clients;
 
+import com.restfulbooker.config.ConfigManager;
 import com.restfulbooker.utils.RequestSpecificationFactory;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
-
 import static io.restassured.RestAssured.given;
+
 
 public class DeleteBookingClient {
 
@@ -33,5 +34,15 @@ public class DeleteBookingClient {
         return request
                 .when()
                 .delete(BOOKING_ENDPOINT);
+    }
+
+    public Response deleteWithBasicAuth (Object bookingId)
+    {
+        RequestSpecification request = given()
+                .spec(RequestSpecificationFactory.getDefaultRequestSpecification())
+                .pathParams("bookingId", bookingId)
+                .header("Authorization", ConfigManager.getProperty("basicAuth"));
+
+        return request.when().delete(BOOKING_ENDPOINT);
     }
 }

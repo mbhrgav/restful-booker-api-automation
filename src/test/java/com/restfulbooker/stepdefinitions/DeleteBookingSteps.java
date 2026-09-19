@@ -1,15 +1,24 @@
 package com.restfulbooker.stepdefinitions;
 
 import com.restfulbooker.clients.AuthClient;
+import com.restfulbooker.clients.CreateBookingClient;
 import com.restfulbooker.clients.DeleteBookingClient;
 import com.restfulbooker.clients.GetBookingClient;
 import com.restfulbooker.config.ConfigManager;
 import com.restfulbooker.context.ScenarioContext;
 import com.restfulbooker.models.AuthRequest;
+import com.restfulbooker.models.Booking;
+import com.restfulbooker.utils.BookingDataMapper;
+import com.restfulbooker.utils.ExcelReader;
+import io.cucumber.java.en.And;
+import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.restassured.response.Response;
 import org.testng.Assert;
+import org.testng.asserts.SoftAssert;
+
+import java.util.Map;
 
 public class DeleteBookingSteps {
 
@@ -17,6 +26,10 @@ public class DeleteBookingSteps {
     private final DeleteBookingClient deleteBookingClient;
     private final GetBookingClient getBookingClient;
     private final AuthClient authClient;
+    private static final String EXCEL_PATH = "testdata/BookingTestData.xlsx";
+    private static final String SHEET_NAME = "CreateBooking";
+    private final CreateBookingClient createBookingClient;
+    private final SoftAssert softAssert;
 
     public DeleteBookingSteps(
             ScenarioContext scenarioContext
@@ -27,6 +40,8 @@ public class DeleteBookingSteps {
         this.getBookingClient =
                 new GetBookingClient();
         this.authClient = new AuthClient();
+        this.createBookingClient = new CreateBookingClient();
+        this.softAssert = new SoftAssert();
     }
 
     @When(
@@ -189,5 +204,49 @@ public class DeleteBookingSteps {
         scenarioContext.setToken(token);
 
         return token;
+    }
+
+    @Given("New booking is created using excel test case {string}")
+    public void newBookingIsCreatedUsingExcelTestCase(String testCaseId)
+    {
+        Map<String,String> excelData = ExcelReader.getRowData(EXCEL_PATH, SHEET_NAME, testCaseId);
+
+        Booking createBooking = BookingDataMapper.toBooking(excelData);
+
+        Response response = createBookingClient.createBooking(createBooking);
+        Assert.assertNotNull(response, "Assert cant be null");
+        softAssert.assertEquals(response.getStatusCode(), 200, "Status code is not 200");
+        int bookingId = response.jsonPath().getInt("bookingid");
+        scenarioContext.setBookingId(bookingId);
+    }
+
+    @When("I send a delete request using valid basic auth")
+    public void iSendADeleteRequestUsingValidBasicAuth()
+    {
+        int bookingId = scenarioContext.getBookingId();
+
+        Response response = deleteBookingClient.deleteWithBasicAuth(bookingId);
+        scenarioContext.setResponse(response);
+
+
+    }
+
+    @Then("The response status code should be {int}")
+    public void theResponseStatusCodeShouldBe(int expectedStatusCode)
+    {
+     Response response = scenarioContext.getResponse();
+     int actualStatusCode = response.getStatusCode();
+
+     softAssert.assertEquals(actualStatusCode, expectedStatusCode, "Status code does not match");
+    }
+
+    @And("Deleted booking should not be present")
+    public void deletedBookingShouldNotBePresent()
+    {
+       int bookingId = scenarioContext.getBookingId();
+       Response response = getBookingClient.getBookingById(bookingId);
+       int statusCode = response.getStatusCode();
+       softAssert.assertNotEquals(statusCode, 200, "Booking with booking id - '" + bookingId + "' is not deleted");
+
     }
 }
