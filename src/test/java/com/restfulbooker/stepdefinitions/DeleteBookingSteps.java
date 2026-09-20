@@ -224,29 +224,23 @@ public class DeleteBookingSteps {
     public void iSendADeleteRequestUsingValidBasicAuth()
     {
         int bookingId = scenarioContext.getBookingId();
-
-        Response response = deleteBookingClient.deleteWithBasicAuth(bookingId);
-        scenarioContext.setResponse(response);
-
-
+        Response deleteResponse = deleteBookingClient.deleteWithBasicAuth(bookingId);
+        scenarioContext.setResponse(deleteResponse);
     }
 
     @Then("The response status code should be {int}")
     public void theResponseStatusCodeShouldBe(int expectedStatusCode)
     {
-     Response response = scenarioContext.getResponse();
-     int actualStatusCode = response.getStatusCode();
-
-     softAssert.assertEquals(actualStatusCode, expectedStatusCode, "Status code does not match");
+     Response deleteResponse = scenarioContext.getResponse();
+     deleteResponse.then().log().ifValidationFails().statusCode(expectedStatusCode);
     }
 
-    @And("Deleted booking should not be present")
+    @Then("Deleted booking should not be present")
     public void deletedBookingShouldNotBePresent()
     {
        int bookingId = scenarioContext.getBookingId();
-       Response response = getBookingClient.getBookingById(bookingId);
-       int statusCode = response.getStatusCode();
-       softAssert.assertNotEquals(statusCode, 200, "Booking with booking id - '" + bookingId + "' is not deleted");
-
+       Response getresponse = getBookingClient.getBookingById(bookingId);
+       scenarioContext.setResponse(getresponse);
+       getresponse.then().log().ifValidationFails().statusCode(404);
     }
 }
