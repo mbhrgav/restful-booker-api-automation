@@ -110,16 +110,6 @@ Environment configuration is maintained in:
 src/test/resources/config.properties
 ```
 
-Default configuration:
-
-```properties
-base.url=https://restful-booker.herokuapp.com
-username=admin
-password=password123
-```
-
-The username and password are public test credentials provided for the Restful Booker demo API. Real project credentials must not be committed to source control.
-
 ## Test Data
 
 Booking request data is maintained in:
