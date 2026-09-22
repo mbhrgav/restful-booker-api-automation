@@ -7,91 +7,184 @@
         <encoding>UTF-8</encoding>
         <protocol>HTTPS</protocol>
 
-        <documentTitle>
-            Restful Booker API Automation Report
-        </documentTitle>
-
-        <reportName>
-            Restful Booker API Test Results
-        </reportName>
+        <documentTitle>Restful Booker API Automation Report</documentTitle>
+        <reportName>Restful Booker API Test Results</reportName>
 
         <timelineEnabled>true</timelineEnabled>
-        <offlineMode>true</offlineMode>
+        <enableOfflineMode>true</enableOfflineMode>
 
-        <scripts>
-            <![CDATA[
-        function renameDashboardCharts() {
+        <js><![CDATA[
+(function () {
 
-            const headings =
-                Array.from(document.querySelectorAll("p"));
+    console.info("RB_CHART_LABELS_V3 loaded");
 
-            const scenarioHeading =
-                headings.find(
-                    heading =>
-                        heading.textContent.trim() === "Steps"
+    function updateChartLabels() {
+
+        // Locate the log chart using its existing title.
+        const logHeading = Array.from(
+            document.querySelectorAll("p, h4, h5, h6, span")
+        ).find(function (element) {
+            const text = element.textContent.trim();
+
+            return element.children.length === 0
+                && (text === "Log events" || text === "Logs");
+        });
+
+        if (!logHeading) {
+            return false;
+        }
+
+        const logCard = logHeading.closest(".card");
+
+        if (!logCard || !logCard.querySelector("canvas")) {
+            return false;
+        }
+
+        /*
+         * Find the common container of the four chart cards.
+         * Do not assume that headings are inside .card-header.
+         */
+        let container = logCard.parentElement;
+        let chartCards = [];
+
+        while (container && container !== document.body) {
+
+            chartCards = Array.from(
+                container.querySelectorAll(".card")
+            ).filter(function (card) {
+                return card.querySelector("canvas") !== null;
+            });
+
+            if (
+                chartCards.length === 4
+                && chartCards[3] === logCard
+            ) {
+                break;
+            }
+
+            container = container.parentElement;
+        }
+
+        if (
+            !container
+            || container === document.body
+            || chartCards.length !== 4
+        ) {
+            return false;
+        }
+
+        const labels = [
+            "Tests",
+            "Scenarios",
+            "Steps",
+            "Logs"
+        ];
+
+        /*
+         * Match the heading element's tag and classes to the
+         * Log events heading, including the empty third heading.
+         */
+        const headingTag = logHeading.tagName.toLowerCase();
+        const headingClasses = Array.from(logHeading.classList);
+
+        const headings = chartCards.map(function (card) {
+
+            return Array.from(
+                card.querySelectorAll(headingTag)
+            ).find(function (element) {
+
+                if (element.closest(".card-footer")) {
+                    return false;
+                }
+
+                const matchingClasses = headingClasses.every(
+                    function (className) {
+                        return element.classList.contains(className);
+                    }
                 );
 
-            if (scenarioHeading) {
-                scenarioHeading.textContent = "Scenarios";
-            }
+                const text = element.textContent.trim();
 
-            const logHeading =
-                headings.find(
-                    heading =>
-                        heading.textContent.trim() === "Log events"
+                const matchingText = [
+                    "",
+                    "Tests",
+                    "Scenarios",
+                    "Steps",
+                    "Log events",
+                    "Logs"
+                ].includes(text);
+
+                return matchingClasses && matchingText;
+            });
+        });
+
+        if (headings.some(function (heading) {
+            return !heading;
+        })) {
+            return false;
+        }
+
+        headings.forEach(function (heading, index) {
+            heading.textContent = labels[index];
+        });
+
+        // Rename scenario units in the second card's summary.
+        const scenarioFooter =
+            chartCards[1].querySelector(".card-footer");
+
+        if (scenarioFooter) {
+
+            const walker = document.createTreeWalker(
+                scenarioFooter,
+                NodeFilter.SHOW_TEXT
+            );
+
+            let node;
+
+            while ((node = walker.nextNode())) {
+                node.nodeValue = node.nodeValue.replace(
+                    /\bsteps\b/gi,
+                    "scenarios"
                 );
-
-            if (!logHeading) {
-                return;
-            }
-
-            const logCard =
-                logHeading.closest(".card");
-
-            if (!logCard) {
-                return;
-            }
-
-            const logColumn = logCard.parentElement;
-
-            const previousColumn =
-                logColumn.previousElementSibling;
-
-            if (!previousColumn) {
-                return;
-            }
-
-            const stepsCard =
-                previousColumn.querySelector(".card");
-
-            if (!stepsCard) {
-                return;
-            }
-
-            const stepsHeading =
-                stepsCard.querySelector(".card-header p")
-                || stepsCard.querySelector("p");
-
-            if (stepsHeading) {
-                stepsHeading.textContent = "Steps";
             }
         }
 
+        console.info("RB_CHART_LABELS_V3 applied");
+        return true;
+    }
+
+    function start() {
+
+        if (updateChartLabels()) {
+            return;
+        }
+
+        let attempts = 0;
+
+        const timer = window.setInterval(function () {
+
+            attempts++;
+
+            if (updateChartLabels() || attempts >= 40) {
+                window.clearInterval(timer);
+            }
+
+        }, 250);
+    }
+
+    if (document.readyState === "loading") {
         document.addEventListener(
             "DOMContentLoaded",
-            renameDashboardCharts
+            start,
+            { once: true }
         );
+    } else {
+        start();
+    }
 
-        window.addEventListener(
-            "load",
-            renameDashboardCharts
-        );
+})();
+            ]]>
+        </js>
 
-        setTimeout(
-            renameDashboardCharts,
-            500
-        );
-    ]]>
-        </scripts>
     </configuration>
 </extentreports>
