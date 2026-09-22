@@ -20,10 +20,10 @@ import java.util.Map;
 public class UpdateBookingSteps {
 
     private static final String EXCEL_FILE_PATH =
-            "testdata/BookingTestData.xlsx";
+            ConfigManager.getProperty("excel.file.path");
 
     private static final String UPDATE_BOOKING_SHEET =
-            "UpdateBooking";
+            ConfigManager.getProperty("excel.sheet.update");
 
     private final ScenarioContext scenarioContext;
     private final UpdateBookingClient updateBookingClient;

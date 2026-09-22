@@ -1,5 +1,6 @@
 package com.restfulbooker.runner;
 
+import com.restfulbooker.config.ConfigManager;
 import io.cucumber.testng.AbstractTestNGCucumberTests;
 import io.cucumber.testng.CucumberOptions;
 import org.testng.annotations.BeforeSuite;
@@ -8,6 +9,8 @@ import org.testng.annotations.Parameters;
 import com.restfulbooker.clients.HealthCheckClient;
 import io.restassured.response.Response;
 import org.testng.Assert;
+import com.aventstack.extentreports.ExtentTest;
+import com.aventstack.extentreports.service.ExtentService;
 
 @CucumberOptions(
         features = "src/test/resources/features",
@@ -32,8 +35,13 @@ public class TestRunner extends AbstractTestNGCucumberTests {
         configureCucumberTags(cucumberTags);
         verifyApiIsAvailable();
     }
-
     private void verifyApiIsAvailable() {
+
+        ExtentTest healthCheckReport =
+                ExtentService.getInstance()
+                        .createTest(
+                                "Pre-Execution API Health Check"
+                        );
 
         System.out.println(
                 "Running pre-execution API health check..."
@@ -44,31 +52,59 @@ public class TestRunner extends AbstractTestNGCucumberTests {
         try {
             response = new HealthCheckClient()
                     .checkHealth();
+
         } catch (Exception exception) {
 
+            String failureMessage =
+                    "Restful Booker API could not be reached. Reason: "
+                            + exception.getMessage();
+
+            healthCheckReport.fail(failureMessage);
+
+            ExtentService.flush();
+
             Assert.fail(
-                    "Test execution stopped because Restful Booker API "
-                            + "could not be reached. Reason: "
-                            + exception.getMessage(),
+                    failureMessage,
                     exception
             );
 
             return;
         }
-
-        Assert.assertEquals(
-                response.getStatusCode(),
-                201,
-                "Test execution stopped because the health-check API "
-                        + "did not return status code 201. Response: "
-                        + response.asString()
+        int expectedStatusCode = Integer.parseInt(
+                ConfigManager.getProperty(
+                        "health.expected.status"
+                )
         );
+        int actualStatusCode =
+                response.getStatusCode();
 
-        System.out.println(
-                "Health check passed. Starting test execution..."
-        );
+        if (actualStatusCode != expectedStatusCode) {
+
+            String failureMessage =
+                    "Health check failed. Expected status code: "
+                            + expectedStatusCode
+                            + ", but actual status code was: "
+                            + actualStatusCode
+                            + ". Response body: "
+                            + response.asString();
+
+            healthCheckReport.fail(failureMessage);
+
+            ExtentService.flush();
+
+            Assert.fail(failureMessage);
+        }
+
+        String successMessage =
+                "Health check passed. API returned status code: "
+                        + actualStatusCode;
+
+        healthCheckReport.pass(successMessage);
+
+        ExtentService.flush();
+
+        System.out.println(successMessage);
     }
-
     public void configureCucumberTags(
             @Optional("") String cucumberTags) {
 
