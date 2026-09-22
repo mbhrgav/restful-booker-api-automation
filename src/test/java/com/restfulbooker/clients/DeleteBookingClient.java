@@ -10,7 +10,8 @@ import static io.restassured.RestAssured.given;
 public class DeleteBookingClient {
 
     private static final String BOOKING_ENDPOINT =
-            "/booking/{bookingId}";
+            ConfigManager.getProperty("endpoint.booking")
+                    + "/{bookingId}";
 
     public Response deleteBooking(
             Object bookingId,

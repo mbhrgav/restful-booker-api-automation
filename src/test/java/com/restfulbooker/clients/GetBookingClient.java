@@ -1,5 +1,6 @@
 package com.restfulbooker.clients;
 
+import com.restfulbooker.config.ConfigManager;
 import com.restfulbooker.utils.RequestSpecificationFactory;
 import io.restassured.response.Response;
 
@@ -10,7 +11,7 @@ import static io.restassured.RestAssured.given;
 public class GetBookingClient {
 
     private static final String BOOKING_ENDPOINT =
-            "/booking";
+            ConfigManager.getProperty("endpoint.booking");
 
     public Response getAllBookingIds() {
 

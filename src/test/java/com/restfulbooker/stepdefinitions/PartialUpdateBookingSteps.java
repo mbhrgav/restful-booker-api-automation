@@ -19,10 +19,12 @@ import java.util.Map;
 public class PartialUpdateBookingSteps {
 
     private static final String EXCEL_FILE_PATH =
-            "testdata/BookingTestData.xlsx";
+            ConfigManager.getProperty("excel.file.path");
 
     private static final String PARTIAL_UPDATE_SHEET =
-            "PartialUpdateBooking";
+            ConfigManager.getProperty(
+                    "excel.sheet.partial.update"
+            );
 
     private final ScenarioContext scenarioContext;
     private final PartialUpdateBookingClient partialUpdateClient;

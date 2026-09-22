@@ -1,6 +1,7 @@
 package com.restfulbooker.stepdefinitions;
 
 import com.restfulbooker.clients.CreateBookingClient;
+import com.restfulbooker.config.ConfigManager;
 import com.restfulbooker.context.ScenarioContext;
 import com.restfulbooker.models.Booking;
 import com.restfulbooker.utils.BookingDataMapper;
@@ -17,10 +18,10 @@ import java.util.Map;
 public class CreateBookingSteps {
 
     private static final String EXCEL_FILE_PATH =
-                       "testdata/BookingTestData.xlsx";
+            ConfigManager.getProperty("excel.file.path");
 
-    private static final String SHEET_NAME =
-            "CreateBooking";
+    private static final String CREATE_BOOKING_SHEET =
+            ConfigManager.getProperty("excel.sheet.create");
 
     private final ScenarioContext scenarioContext;
     private final CreateBookingClient createBookingClient;
@@ -45,7 +46,7 @@ public class CreateBookingSteps {
         Map<String, String> excelData =
                 ExcelReader.getRowData(
                         EXCEL_FILE_PATH,
-                        SHEET_NAME,
+                        CREATE_BOOKING_SHEET,
                         testCaseId
                 );
 
@@ -67,7 +68,7 @@ public class CreateBookingSteps {
         Map<String, String> excelData =
                 ExcelReader.getRowData(
                         EXCEL_FILE_PATH,
-                        SHEET_NAME,
+                        CREATE_BOOKING_SHEET,
                         testCaseId
                 );
 
