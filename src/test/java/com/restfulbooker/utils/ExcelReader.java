@@ -8,6 +8,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import com.restfulbooker.config.ConfigManager;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,10 +22,23 @@ public final class ExcelReader {
 
     private static final DateTimeFormatter API_DATE_FORMAT =
             DateTimeFormatter.ISO_LOCAL_DATE;
+   // private static final String DEFAULT_EXCEL_FILE_PATH =ConfigManager.getProperty("excel.file.path");
 
     private ExcelReader() {
         // Prevent object creation
     }
+
+//    public static Map<String, String> getRowData(
+//            String sheetName,
+//            String testCaseId
+//    ) {
+//
+//        return getRowData(
+//                DEFAULT_EXCEL_FILE_PATH,
+//                sheetName,
+//                testCaseId
+//        );
+  //  }
 
     public static Map<String, String> getRowData(
             String filePath,

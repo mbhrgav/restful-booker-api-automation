@@ -26,8 +26,10 @@ public class DeleteBookingSteps {
     private final DeleteBookingClient deleteBookingClient;
     private final GetBookingClient getBookingClient;
     private final AuthClient authClient;
-    private static final String EXCEL_PATH = "testdata/BookingTestData.xlsx";
-    private static final String SHEET_NAME = "CreateBooking";
+    private static final String EXCEL_FILE_PATH =
+            ConfigManager.getProperty("excel.file.path");
+    private static final String CREATE_BOOKING_SHEET =
+            ConfigManager.getProperty("excel.sheet.create");
     private final CreateBookingClient createBookingClient;
     private final SoftAssert softAssert;
 
@@ -209,7 +211,7 @@ public class DeleteBookingSteps {
     @Given("New booking is created using excel test case {string}")
     public void newBookingIsCreatedUsingExcelTestCase(String testCaseId)
     {
-        Map<String,String> excelData = ExcelReader.getRowData(EXCEL_PATH, SHEET_NAME, testCaseId);
+        Map<String,String> excelData = ExcelReader.getRowData(EXCEL_FILE_PATH,CREATE_BOOKING_SHEET, testCaseId);
 
         Booking createBooking = BookingDataMapper.toBooking(excelData);
 
