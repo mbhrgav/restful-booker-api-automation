@@ -1,5 +1,6 @@
 package com.restfulbooker.clients;
 
+import com.restfulbooker.config.ConfigManager;
 import com.restfulbooker.utils.RequestSpecificationFactory;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
@@ -11,7 +12,8 @@ import static io.restassured.RestAssured.given;
 public class PartialUpdateBookingClient {
 
     private static final String BOOKING_ENDPOINT =
-            "/booking/{bookingId}";
+            ConfigManager.getProperty("endpoint.booking")
+                    + "/{bookingId}";
 
     public Response partiallyUpdateBooking(
             Object bookingId,
