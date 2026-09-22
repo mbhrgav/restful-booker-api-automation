@@ -5,6 +5,9 @@ import io.cucumber.testng.CucumberOptions;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Optional;
 import org.testng.annotations.Parameters;
+import com.restfulbooker.clients.HealthCheckClient;
+import io.restassured.response.Response;
+import org.testng.Assert;
 
 @CucumberOptions(
         features = "src/test/resources/features",
@@ -23,6 +26,49 @@ public class TestRunner extends AbstractTestNGCucumberTests {
 
     @BeforeSuite(alwaysRun = true)
     @Parameters("cucumber.filter.tags")
+    public void configureTestSuite(
+            @Optional("") String cucumberTags) {
+
+        configureCucumberTags(cucumberTags);
+        verifyApiIsAvailable();
+    }
+
+    private void verifyApiIsAvailable() {
+
+        System.out.println(
+                "Running pre-execution API health check..."
+        );
+
+        Response response;
+
+        try {
+            response = new HealthCheckClient()
+                    .checkHealth();
+        } catch (Exception exception) {
+
+            Assert.fail(
+                    "Test execution stopped because Restful Booker API "
+                            + "could not be reached. Reason: "
+                            + exception.getMessage(),
+                    exception
+            );
+
+            return;
+        }
+
+        Assert.assertEquals(
+                response.getStatusCode(),
+                201,
+                "Test execution stopped because the health-check API "
+                        + "did not return status code 201. Response: "
+                        + response.asString()
+        );
+
+        System.out.println(
+                "Health check passed. Starting test execution..."
+        );
+    }
+
     public void configureCucumberTags(
             @Optional("") String cucumberTags) {
 
