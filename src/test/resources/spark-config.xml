@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<extentreports>
+    <configuration>
+
+        <theme>STANDARD</theme>
+        <encoding>UTF-8</encoding>
+        <protocol>HTTPS</protocol>
+
+        <documentTitle>
+            Restful Booker API Automation Report
+        </documentTitle>
+
+        <reportName>
+            Restful Booker API Test Results
+        </reportName>
+
+        <timelineEnabled>true</timelineEnabled>
+        <offlineMode>true</offlineMode>
+
+    </configuration>
+</extentreports>

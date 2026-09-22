@@ -4,6 +4,7 @@ import com.restfulbooker.context.ScenarioContext;
 import io.cucumber.java.After;
 import io.cucumber.java.Scenario;
 import io.restassured.response.Response;
+import com.aventstack.extentreports.cucumber.adapter.ExtentCucumberAdapter;
 
 public class Hooks {
 
@@ -14,7 +15,7 @@ public class Hooks {
     }
 
     @After
-    public void attachApiResponseToReport(Scenario scenario) {
+    public void attachApiResponseToReport() {
 
         Response response = scenarioContext.getResponse();
 
@@ -22,11 +23,7 @@ public class Hooks {
             return;
         }
 
-        scenario.log(
-                "Response status code: " + response.getStatusCode()
-        );
-
-        String responseBody = response.asString();
+        String responseBody = response.asPrettyString();
 
         if (responseBody == null || responseBody.isBlank()) {
             responseBody = "Response body was empty";
@@ -34,10 +31,14 @@ public class Hooks {
             responseBody = maskSensitiveData(responseBody);
         }
 
-        scenario.attach(
-                responseBody,
-                "text/plain",
-                "API Response"
+        ExtentCucumberAdapter.addTestStepLog(
+                "<b>Response Status Code:</b> "
+                        + response.getStatusCode()
+                        + "<br><br>"
+                        + "<b>API Response:</b>"
+                        + "<pre>"
+                        + escapeHtml(responseBody)
+                        + "</pre>"
         );
     }
 
@@ -47,5 +48,13 @@ public class Hooks {
                 "(?i)(\"(?:token|password)\"\\s*:\\s*\")[^\"]*(\")",
                 "$1********$2"
         );
+    }
+
+    private String escapeHtml(String value) {
+
+        return value
+                .replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;");
     }
 }
