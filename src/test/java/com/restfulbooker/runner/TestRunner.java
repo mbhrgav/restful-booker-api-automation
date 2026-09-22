@@ -58,7 +58,7 @@ public class TestRunner extends AbstractTestNGCucumberTests {
 
         Assert.assertEquals(
                 response.getStatusCode(),
-                200,
+                201,
                 "Test execution stopped because the health-check API "
                         + "did not return status code 201. Response: "
                         + response.asString()
