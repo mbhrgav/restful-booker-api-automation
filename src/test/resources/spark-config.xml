@@ -18,5 +18,80 @@
         <timelineEnabled>true</timelineEnabled>
         <offlineMode>true</offlineMode>
 
+        <scripts>
+            <![CDATA[
+        function renameDashboardCharts() {
+
+            const headings =
+                Array.from(document.querySelectorAll("p"));
+
+            const scenarioHeading =
+                headings.find(
+                    heading =>
+                        heading.textContent.trim() === "Steps"
+                );
+
+            if (scenarioHeading) {
+                scenarioHeading.textContent = "Scenarios";
+            }
+
+            const logHeading =
+                headings.find(
+                    heading =>
+                        heading.textContent.trim() === "Log events"
+                );
+
+            if (!logHeading) {
+                return;
+            }
+
+            const logCard =
+                logHeading.closest(".card");
+
+            if (!logCard) {
+                return;
+            }
+
+            const logColumn = logCard.parentElement;
+
+            const previousColumn =
+                logColumn.previousElementSibling;
+
+            if (!previousColumn) {
+                return;
+            }
+
+            const stepsCard =
+                previousColumn.querySelector(".card");
+
+            if (!stepsCard) {
+                return;
+            }
+
+            const stepsHeading =
+                stepsCard.querySelector(".card-header p")
+                || stepsCard.querySelector("p");
+
+            if (stepsHeading) {
+                stepsHeading.textContent = "Steps";
+            }
+        }
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            renameDashboardCharts
+        );
+
+        window.addEventListener(
+            "load",
+            renameDashboardCharts
+        );
+
+        setTimeout(
+            renameDashboardCharts,
+            500
+        );
+    ]]>
+        </scripts>
     </configuration>
 </extentreports>
