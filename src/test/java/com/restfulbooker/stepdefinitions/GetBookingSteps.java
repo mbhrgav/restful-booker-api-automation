@@ -110,6 +110,8 @@ public class GetBookingSteps {
                 createBookingClient.createBooking(
                         expectedBooking
                 );
+        scenarioContext.setResponse(createResponse);
+        scenarioContext.registerCreatedBooking(createResponse);
 
         createResponse.then()
                 .log()
