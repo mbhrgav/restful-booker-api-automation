@@ -116,6 +116,7 @@ public class CreateBookingSteps {
         }
 
         scenarioContext.setResponse(response);
+        scenarioContext.registerCreatedBooking(response);
     }
 
     @Then("the create booking response should contain a valid booking ID")
