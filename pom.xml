@@ -120,6 +120,12 @@
                     <includes>
                         <include>**/TestRunner.java</include>
                     </includes>
+                    <properties>
+                        <property>
+                            <name>dataproviderthreadcount</name>
+                            <value>${scenario.threads}</value>
+                        </property>
+                    </properties>
                 </configuration>
             </plugin>
 

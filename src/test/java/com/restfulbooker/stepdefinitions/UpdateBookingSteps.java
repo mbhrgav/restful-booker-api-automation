@@ -1,19 +1,17 @@
 package com.restfulbooker.stepdefinitions;
 
-import com.restfulbooker.clients.AuthClient;
 import com.restfulbooker.clients.UpdateBookingClient;
 import com.restfulbooker.config.ConfigManager;
 import com.restfulbooker.context.ScenarioContext;
-import com.restfulbooker.models.AuthRequest;
 import com.restfulbooker.models.Booking;
 import com.restfulbooker.utils.BookingDataMapper;
 import com.restfulbooker.utils.ExcelReader;
+import com.restfulbooker.utils.BookingAssertions;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.restassured.response.Response;
 import org.testng.Assert;
-import org.testng.asserts.SoftAssert;
 
 import java.util.Map;
 
@@ -27,18 +25,18 @@ public class UpdateBookingSteps {
 
     private final ScenarioContext scenarioContext;
     private final UpdateBookingClient updateBookingClient;
-    private final AuthClient authClient;
+    private final CommonSteps commonSteps;
 
     private Booking updateBookingRequest;
     private Map<String, Object> invalidUpdateRequest;
 
     public UpdateBookingSteps(
-            ScenarioContext scenarioContext
+            ScenarioContext scenarioContext, CommonSteps commonSteps
     ) {
         this.scenarioContext = scenarioContext;
         this.updateBookingClient =
                 new UpdateBookingClient();
-        this.authClient = new AuthClient();
+        this.commonSteps = commonSteps;
     }
 
     @Given(
@@ -102,8 +100,7 @@ public class UpdateBookingSteps {
                 "Booking ID was not available for update"
         );
 
-        String token =
-                resolveToken(authenticationType);
+        String token =  commonSteps.resolveToken(authenticationType);
 
         Response response = sendUpdateRequest(
                 bookingId,
@@ -120,17 +117,12 @@ public void iSendPutRequestForBookingId(
         String bookingId
 ) {
 
-    String token = generateValidToken();
+    String token = commonSteps.generateValidToken();
 
-    Response response = sendUpdateRequest(
-            bookingId,
-            token
-    );
+    Response response = sendUpdateRequest(bookingId, token);
 
     if (response.statusCode() == 403) {
-
-        String refreshedToken = generateValidToken();
-
+        String refreshedToken = commonSteps.generateValidToken();
         response = sendUpdateRequest(
                 bookingId,
                 refreshedToken
@@ -141,7 +133,7 @@ public void iSendPutRequestForBookingId(
 }
 
     @Then(
-        "the updated booking details should match Excel test case {string}"
+            "the updated booking details should match Excel test case {string}"
     )
     public void updatedBookingDetailsShouldMatchExcelTestCase(
             String testCaseId
@@ -149,70 +141,14 @@ public void iSendPutRequestForBookingId(
 
         Assert.assertNotNull(
                 updateBookingRequest,
-                "Expected update data was not available for "
-                        + testCaseId
+                "Expected update data was not available for " + testCaseId
         );
 
-        Response response =
-                scenarioContext.getResponse();
-
-        Assert.assertNotNull(
-                response,
-                "Update booking response was not available"
+        BookingAssertions.validateBookingDetails(
+                scenarioContext.getResponse(),
+                updateBookingRequest,
+                ""
         );
-
-        SoftAssert softAssert = new SoftAssert();
-
-        softAssert.assertEquals(
-                response.jsonPath().getString("firstname"),
-                updateBookingRequest.getFirstname(),
-                "Updated firstname did not match"
-        );
-
-        softAssert.assertEquals(
-                response.jsonPath().getString("lastname"),
-                updateBookingRequest.getLastname(),
-                "Updated lastname did not match"
-        );
-
-        softAssert.assertEquals(
-                response.jsonPath().getInt("totalprice"),
-                updateBookingRequest.getTotalprice(),
-                "Updated total price did not match"
-        );
-
-        softAssert.assertEquals(
-                response.jsonPath().getBoolean("depositpaid"),
-                updateBookingRequest.isDepositpaid(),
-                "Updated deposit-paid value did not match"
-        );
-
-        softAssert.assertEquals(
-                response.jsonPath()
-                        .getString("bookingdates.checkin"),
-                updateBookingRequest
-                        .getBookingdates()
-                        .getCheckin(),
-                "Updated check-in date did not match"
-        );
-
-        softAssert.assertEquals(
-                response.jsonPath()
-                        .getString("bookingdates.checkout"),
-                updateBookingRequest
-                        .getBookingdates()
-                        .getCheckout(),
-                "Updated check-out date did not match"
-        );
-
-        softAssert.assertEquals(
-                response.jsonPath()
-                        .getString("additionalneeds"),
-                updateBookingRequest.getAdditionalneeds(),
-                "Updated additional needs did not match"
-        );
-
-        softAssert.assertAll();
     }
 
     private Response sendUpdateRequest(
@@ -241,54 +177,4 @@ public void iSendPutRequestForBookingId(
         );
     }
 
-    private String resolveToken(
-            String authenticationType
-    ) {
-
-        return switch (
-                authenticationType.trim().toLowerCase()
-        ) {
-            case "valid" -> generateValidToken();
-            case "missing" -> null;
-            case "invalid" -> "invalid-token";
-            default -> throw new IllegalArgumentException(
-                    "Unsupported authentication type: "
-                            + authenticationType
-            );
-        };
-    }
-
-    private String generateValidToken() {
-
-        AuthRequest authRequest = new AuthRequest(
-                ConfigManager.getProperty("username"),
-                ConfigManager.getProperty("password")
-        );
-
-        Response authResponse =
-                authClient.createToken(authRequest);
-
-        authResponse.then()
-                .log()
-                .ifValidationFails()
-                .statusCode(200);
-
-        String token = authResponse
-                .jsonPath()
-                .getString("token");
-
-        Assert.assertNotNull(
-                token,
-                "Authentication token must not be null"
-        );
-
-        Assert.assertFalse(
-                token.isBlank(),
-                "Authentication token must not be blank"
-        );
-
-        scenarioContext.setToken(token);
-
-        return token;
-    }
 }

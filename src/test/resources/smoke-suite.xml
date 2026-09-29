@@ -4,10 +4,10 @@
 
 <suite name="Restful Booker Smoke Suite"
        verbose="1"
-       parallel="false">
+       parallel="false"
+       data-provider-thread-count="2">
 
-    <parameter name="cucumber.filter.tags"
-               value="@smoke"/>
+    <parameter name="cucumber.filter.tags" value="@smoke"/>
 
     <test name="Smoke API Tests">
         <classes>

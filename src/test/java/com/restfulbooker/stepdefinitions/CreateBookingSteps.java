@@ -6,12 +6,12 @@ import com.restfulbooker.context.ScenarioContext;
 import com.restfulbooker.models.Booking;
 import com.restfulbooker.utils.BookingDataMapper;
 import com.restfulbooker.utils.ExcelReader;
+import com.restfulbooker.utils.BookingAssertions;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.restassured.response.Response;
 import org.testng.Assert;
-import org.testng.asserts.SoftAssert;
 
 import java.util.Map;
 
@@ -149,78 +149,10 @@ public class CreateBookingSteps {
     @Then("the created booking details should match the request")
     public void createdBookingDetailsShouldMatchTheRequest() {
 
-        Response response =
-                scenarioContext.getResponse();
-
-        Assert.assertNotNull(
-                response,
-                "Create booking response was not available"
-        );
-
-        Assert.assertNotNull(
+        BookingAssertions.validateBookingDetails(
+                scenarioContext.getResponse(),
                 bookingRequest,
-                "Expected booking data was not available"
+                "booking"
         );
-
-        SoftAssert softAssert = new SoftAssert();
-
-        softAssert.assertEquals(
-                response.jsonPath()
-                        .getString("booking.firstname"),
-                bookingRequest.getFirstname(),
-                "Firstname did not match"
-        );
-
-        softAssert.assertEquals(
-                response.jsonPath()
-                        .getString("booking.lastname"),
-                bookingRequest.getLastname(),
-                "Lastname did not match"
-        );
-
-        softAssert.assertEquals(
-                response.jsonPath()
-                        .getInt("booking.totalprice"),
-                bookingRequest.getTotalprice(),
-                "Total price did not match"
-        );
-
-        softAssert.assertEquals(
-                response.jsonPath()
-                        .getBoolean("booking.depositpaid"),
-                bookingRequest.isDepositpaid(),
-                "Deposit-paid value did not match"
-        );
-
-        softAssert.assertEquals(
-                response.jsonPath()
-                        .getString(
-                                "booking.bookingdates.checkin"
-                        ),
-                bookingRequest
-                        .getBookingdates()
-                        .getCheckin(),
-                "Check-in date did not match"
-        );
-
-        softAssert.assertEquals(
-                response.jsonPath()
-                        .getString(
-                                "booking.bookingdates.checkout"
-                        ),
-                bookingRequest
-                        .getBookingdates()
-                        .getCheckout(),
-                "Check-out date did not match"
-        );
-
-        softAssert.assertEquals(
-                response.jsonPath()
-                        .getString("booking.additionalneeds"),
-                bookingRequest.getAdditionalneeds(),
-                "Additional needs did not match"
-        );
-
-        softAssert.assertAll();
     }
 }
