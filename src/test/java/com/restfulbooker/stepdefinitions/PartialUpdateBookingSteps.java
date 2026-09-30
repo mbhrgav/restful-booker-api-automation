@@ -1,10 +1,8 @@
 package com.restfulbooker.stepdefinitions;
 
-import com.restfulbooker.clients.AuthClient;
 import com.restfulbooker.clients.PartialUpdateBookingClient;
 import com.restfulbooker.config.ConfigManager;
 import com.restfulbooker.context.ScenarioContext;
-import com.restfulbooker.models.AuthRequest;
 import com.restfulbooker.utils.ExcelReader;
 import com.restfulbooker.utils.PartialUpdateDataMapper;
 import io.cucumber.java.en.Given;
@@ -28,17 +26,17 @@ public class PartialUpdateBookingSteps {
 
     private final ScenarioContext scenarioContext;
     private final PartialUpdateBookingClient partialUpdateClient;
-    private final AuthClient authClient;
+    private final CommonSteps commonSteps;
 
     private Map<String, Object> partialUpdateRequest;
 
     public PartialUpdateBookingSteps(
-            ScenarioContext scenarioContext
+            ScenarioContext scenarioContext,CommonSteps commonSteps
     ) {
         this.scenarioContext = scenarioContext;
         this.partialUpdateClient =
                 new PartialUpdateBookingClient();
-        this.authClient = new AuthClient();
+        this.commonSteps = commonSteps;
     }
 
     @Given(
@@ -81,7 +79,7 @@ public class PartialUpdateBookingSteps {
         );
 
         String token =
-                resolveToken(authenticationType);
+                commonSteps.resolveToken(authenticationType);
 
         Response response = partialUpdateClient
                 .partiallyUpdateBooking(
@@ -97,7 +95,7 @@ public class PartialUpdateBookingSteps {
             response = partialUpdateClient
                     .partiallyUpdateBooking(
                             bookingId,
-                            generateValidToken(),
+                            commonSteps.generateValidToken(),
                             partialUpdateRequest
                     );
         }
@@ -115,7 +113,7 @@ public class PartialUpdateBookingSteps {
         Response response = partialUpdateClient
                 .partiallyUpdateBooking(
                         bookingId,
-                        generateValidToken(),
+                        commonSteps.generateValidToken(),
                         partialUpdateRequest
                 );
 
@@ -123,7 +121,7 @@ public class PartialUpdateBookingSteps {
             response = partialUpdateClient
                     .partiallyUpdateBooking(
                             bookingId,
-                            generateValidToken(),
+                            commonSteps.generateValidToken(),
                             partialUpdateRequest
                     );
         }
@@ -256,53 +254,4 @@ public class PartialUpdateBookingSteps {
         );
     }
 
-    private String resolveToken(
-            String authenticationType
-    ) {
-
-        return switch (
-                authenticationType.trim().toLowerCase()
-        ) {
-            case "valid" -> generateValidToken();
-            case "missing" -> null;
-            case "invalid" -> "invalid-token";
-            default -> throw new IllegalArgumentException(
-                    "Unsupported authentication type: "
-                            + authenticationType
-            );
-        };
-    }
-
-    private String generateValidToken() {
-
-        AuthRequest authRequest = new AuthRequest(
-                ConfigManager.getProperty("username"),
-                ConfigManager.getProperty("password")
-        );
-
-        Response authResponse =
-                authClient.createToken(authRequest);
-
-        authResponse.then()
-                .log()
-                .ifValidationFails()
-                .statusCode(200);
-
-        String token =
-                authResponse.jsonPath().getString("token");
-
-        Assert.assertNotNull(
-                token,
-                "Authentication token must not be null"
-        );
-
-        Assert.assertFalse(
-                token.isBlank(),
-                "Authentication token must not be blank"
-        );
-
-        scenarioContext.setToken(token);
-
-        return token;
-    }
 }

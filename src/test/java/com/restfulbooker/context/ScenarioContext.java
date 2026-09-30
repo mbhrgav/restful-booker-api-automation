@@ -1,8 +1,10 @@
 package com.restfulbooker.context;
 
+import com.restfulbooker.models.Booking;
 import io.restassured.response.Response;
 import java.util.LinkedHashSet;
 import java.util.Set;
+
 
 public class ScenarioContext {
 
@@ -11,6 +13,11 @@ public class ScenarioContext {
     private Integer bookingId;
     private final Set<Integer> createdBookingIds =
             new LinkedHashSet<>();
+    private Booking expectedBooking;
+
+    public Booking getExpectedBooking() {return expectedBooking;}
+
+    public void setExpectedBooking(Booking expectedBooking) {this.expectedBooking = expectedBooking;}
 
     public void registerCreatedBooking(Response createResponse) {
 

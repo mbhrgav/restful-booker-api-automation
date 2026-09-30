@@ -1,18 +1,14 @@
 package com.restfulbooker.stepdefinitions;
 
-import com.restfulbooker.clients.CreateBookingClient;
+
 import com.restfulbooker.clients.GetBookingClient;
-import com.restfulbooker.config.ConfigManager;
 import com.restfulbooker.context.ScenarioContext;
 import com.restfulbooker.models.Booking;
-import com.restfulbooker.utils.BookingDataMapper;
-import com.restfulbooker.utils.ExcelReader;
-import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.restassured.response.Response;
 import org.testng.Assert;
-import org.testng.asserts.SoftAssert;
+import com.restfulbooker.utils.BookingAssertions;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -20,26 +16,14 @@ import java.util.Map;
 
 public class GetBookingSteps {
 
-    private static final String EXCEL_FILE_PATH =
-            ConfigManager.getProperty("excel.file.path");
-
-    private static final String CREATE_BOOKING_SHEET =
-            ConfigManager.getProperty("excel.sheet.create");
-
     private final ScenarioContext scenarioContext;
-    private final CreateBookingClient createBookingClient;
     private final GetBookingClient getBookingClient;
 
-    private Booking expectedBooking;
 
-    public GetBookingSteps(
-            ScenarioContext scenarioContext
-    ) {
+    public GetBookingSteps(ScenarioContext scenarioContext)
+    {
         this.scenarioContext = scenarioContext;
-        this.createBookingClient =
-                new CreateBookingClient();
-        this.getBookingClient =
-                new GetBookingClient();
+        this.getBookingClient = new GetBookingClient();
     }
 
     @When("I send a GET request to retrieve all booking IDs")
@@ -89,47 +73,6 @@ public class GetBookingSteps {
         }
     }
 
-    @Given(
-        "an existing booking is created using Excel test case {string}"
-    )
-    public void existingBookingIsCreatedUsingExcelTestCase(
-            String testCaseId
-    ) {
-
-        Map<String, String> excelData =
-                ExcelReader.getRowData(
-                        EXCEL_FILE_PATH,
-                        CREATE_BOOKING_SHEET,
-                        testCaseId
-                );
-
-        expectedBooking =
-                BookingDataMapper.toBooking(excelData);
-
-        Response createResponse =
-                createBookingClient.createBooking(
-                        expectedBooking
-                );
-        scenarioContext.setResponse(createResponse);
-        scenarioContext.registerCreatedBooking(createResponse);
-
-        createResponse.then()
-                .log()
-                .ifValidationFails()
-                .statusCode(200);
-
-        Integer bookingId = createResponse
-                .jsonPath()
-                .getInt("bookingid");
-
-        Assert.assertNotNull(
-                bookingId,
-                "Created booking ID must not be null"
-        );
-
-        scenarioContext.setBookingId(bookingId);
-    }
-
     @When("I send a GET request for the created booking ID")
     public void iSendAGetRequestForCreatedBookingId() {
 
@@ -147,83 +90,30 @@ public class GetBookingSteps {
         scenarioContext.setResponse(response);
     }
 
-    @Then(
-        "the returned booking details should match Excel test case {string}"
-    )
+    @Then("the returned booking details should match Excel test case {string}")
     public void returnedBookingDetailsShouldMatchExcelTestCase(
             String testCaseId
     ) {
 
+        Booking expectedBooking =
+                scenarioContext.getExpectedBooking();
+
         Assert.assertNotNull(
                 expectedBooking,
-                "Expected booking data was not available for "
-                        + testCaseId
+                "Expected booking data was not available for " + testCaseId
         );
 
-        Response response =
-                scenarioContext.getResponse();
-
-        Assert.assertNotNull(
-                response,
-                "Get booking response was not available"
+        BookingAssertions.validateBookingDetails(
+                scenarioContext.getResponse(),
+                expectedBooking,
+                ""
         );
-
-        SoftAssert softAssert = new SoftAssert();
-
-        softAssert.assertEquals(
-                response.jsonPath().getString("firstname"),
-                expectedBooking.getFirstname(),
-                "Firstname did not match"
-        );
-
-        softAssert.assertEquals(
-                response.jsonPath().getString("lastname"),
-                expectedBooking.getLastname(),
-                "Lastname did not match"
-        );
-
-        softAssert.assertEquals(
-                response.jsonPath().getInt("totalprice"),
-                expectedBooking.getTotalprice(),
-                "Total price did not match"
-        );
-
-        softAssert.assertEquals(
-                response.jsonPath().getBoolean("depositpaid"),
-                expectedBooking.isDepositpaid(),
-                "Deposit-paid value did not match"
-        );
-
-        softAssert.assertEquals(
-                response.jsonPath()
-                        .getString("bookingdates.checkin"),
-                expectedBooking
-                        .getBookingdates()
-                        .getCheckin(),
-                "Check-in date did not match"
-        );
-
-        softAssert.assertEquals(
-                response.jsonPath()
-                        .getString("bookingdates.checkout"),
-                expectedBooking
-                        .getBookingdates()
-                        .getCheckout(),
-                "Check-out date did not match"
-        );
-
-        softAssert.assertEquals(
-                response.jsonPath()
-                        .getString("additionalneeds"),
-                expectedBooking.getAdditionalneeds(),
-                "Additional needs did not match"
-        );
-
-        softAssert.assertAll();
     }
 
     @When("I filter bookings using {string}")
     public void iFilterBookingsUsing(String filterNames) {
+
+        Booking expectedBooking = scenarioContext.getExpectedBooking();
 
         Assert.assertNotNull(
                 expectedBooking,

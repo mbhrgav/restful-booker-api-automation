@@ -18,12 +18,12 @@ Feature: Delete Booking API
       | CB_DATA_002  |
 
 
-    @positive @smoke
-    Scenario: Delete an existing booking with valid basic auth
-      Given New booking is created using excel test case "CB_DATA_001"
-      When I send a delete request using valid basic auth
-      Then The response status code should be 201
-      And Deleted booking should not be present
+  @positive @smoke
+  Scenario: Delete an existing booking with valid basic auth
+    Given an existing booking is created using Excel test case "CB_DATA_001"
+    When I send a delete request using valid basic auth
+    Then the response status code should be 201
+    And the deleted booking should no longer be available
 
 
   @negative

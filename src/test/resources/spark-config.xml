@@ -74,7 +74,7 @@
         }
 
         const labels = [
-            "Tests",
+            "Features",
             "Scenarios",
             "Steps",
             "Logs"
@@ -181,6 +181,197 @@
     } else {
         start();
     }
+
+})();
+         (function () {
+
+    function simplifyReportSteps() {
+
+        document.querySelectorAll(".accordion > .card")
+            .forEach(function (card) {
+
+                if (card.dataset.simpleView === "true") {
+                    return;
+                }
+
+                const header = Array.from(card.children)
+                    .find(element =>
+                        element.classList.contains("card-header")
+                    );
+
+                const content = Array.from(card.children)
+                    .find(element =>
+                        element.classList.contains("collapse")
+                    );
+
+                // Only change individual steps/hooks.
+                // Keep scenario containers as they are.
+                if (!header || !content) {
+                    return;
+                }
+
+                const titleElement =
+                    header.querySelector(".card-title .node");
+
+                if (!titleElement) {
+                    return;
+                }
+
+                const originalTitle =
+                    titleElement.textContent.trim();
+
+                const statusElement =
+                    header.querySelector(".badge.log");
+
+                const status = statusElement
+                    ? statusElement.textContent.trim()
+                    : "";
+
+                const isHook = originalTitle.startsWith(
+                    "com.restfulbooker.hooks."
+                );
+
+                let title = originalTitle;
+
+                if (isHook) {
+                    if (originalTitle.includes("cleanupCreatedBookings")) {
+                        title = "Cleanup";
+                    } else if (
+                        originalTitle.includes("attachApiResponseToReport")
+                    ) {
+                        title = "API response";
+                    } else if (
+                        originalTitle.includes("logScenarioStart")
+                    ) {
+                        title = "Scenario start";
+                    } else if (
+                        originalTitle.includes("logScenarioResult")
+                    ) {
+                        title = "Scenario execution";
+                    } else {
+                        title = "Hook details";
+                    }
+                }
+
+                const section = document.createElement("div");
+                section.className = "rb-simple-step";
+
+                const heading = document.createElement("div");
+                heading.className = "rb-step-heading";
+
+                const statusLabel = document.createElement("span");
+                statusLabel.className = "rb-step-status";
+
+                const normalizedStatus = status.toLowerCase();
+
+                statusLabel.textContent =
+                    normalizedStatus === "pass" ? "✓ " :
+                    normalizedStatus === "fail" ? "✗ " :
+                    normalizedStatus === "skip" ? "↷ " :
+                    status ? status + " " : "";
+
+                statusLabel.style.color =
+                    normalizedStatus === "pass" ? "#218739" :
+                    normalizedStatus === "fail" ? "#c62828" :
+                    "#806000";
+
+                heading.appendChild(statusLabel);
+                heading.appendChild(document.createTextNode(title));
+                section.appendChild(heading);
+
+                // Extract actual details from the log table.
+                // Preserve responses, cleanup messages and errors.
+                content.querySelectorAll("tr.event-row")
+                    .forEach(function (row) {
+
+                        const detailsCell = row.cells[2];
+
+                        if (!detailsCell) {
+                            return;
+                        }
+
+                        const hasText =
+                            detailsCell.textContent.trim().length > 0;
+
+                        const hasAttachment =
+                            detailsCell.querySelector(
+                                "img, a, video, audio, iframe"
+                            );
+
+                        // Ignore empty automatic "Pass" entries.
+                        if (!hasText && !hasAttachment) {
+                            return;
+                        }
+
+                        const details = document.createElement("div");
+                        details.className = "rb-step-details";
+
+                        Array.from(detailsCell.childNodes)
+                            .forEach(function (node) {
+                                details.appendChild(node.cloneNode(true));
+                            });
+
+                        section.appendChild(details);
+                    });
+
+                card.dataset.simpleView = "true";
+                card.classList.add("rb-flat-card");
+                card.replaceChildren(section);
+            });
+    }
+
+    const style = document.createElement("style");
+
+    style.textContent = `
+        .accordion > .card.rb-flat-card {
+            border: none !important;
+            box-shadow: none !important;
+            background: transparent !important;
+            margin: 0 !important;
+        }
+
+        .rb-simple-step {
+            padding: 7px 16px;
+        }
+
+        .rb-step-heading {
+            font-size: 14px;
+            line-height: 1.6;
+            overflow-wrap: anywhere;
+        }
+
+        .rb-step-status {
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        .rb-step-details {
+            margin: 8px 0 12px 22px;
+            line-height: 1.6;
+            overflow-wrap: anywhere;
+        }
+
+        .rb-step-details pre {
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+            padding: 12px;
+            background: #f6f8fa;
+            border-radius: 6px;
+        }
+    `;
+
+    document.head.appendChild(style);
+
+    if (document.readyState === "loading") {
+        document.addEventListener(
+            "DOMContentLoaded",
+            simplifyReportSteps
+        );
+    } else {
+        simplifyReportSteps();
+    }
+
+    window.addEventListener("load", simplifyReportSteps);
 
 })();
             ]]>

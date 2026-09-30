@@ -28,7 +28,7 @@ Feature: Restful Booker authentication
     @negative
     Scenario: Reject token request when password is missing
       Given I have username "Manvi" and empty password
-      When I send authentication request
-      Then Response status code should be 200
-      And  Response reason should be "Bad credentials"
+      When I send a POST request to the authentication endpoint
+      Then the response status code should be 200
+      And the authentication response reason should be "Bad credentials"
 
