@@ -11,6 +11,7 @@ import io.cucumber.java.en.When;
 import io.restassured.response.Response;
 import org.testng.Assert;
 import org.testng.asserts.SoftAssert;
+import com.restfulbooker.utils.AuthenticationUtils;
 
 import java.util.Map;
 
@@ -26,17 +27,18 @@ public class PartialUpdateBookingSteps {
 
     private final ScenarioContext scenarioContext;
     private final PartialUpdateBookingClient partialUpdateClient;
-    private final CommonSteps commonSteps;
+    private final AuthenticationUtils authenticationUtils;
 
     private Map<String, Object> partialUpdateRequest;
 
     public PartialUpdateBookingSteps(
-            ScenarioContext scenarioContext,CommonSteps commonSteps
+            ScenarioContext scenarioContext
     ) {
         this.scenarioContext = scenarioContext;
         this.partialUpdateClient =
                 new PartialUpdateBookingClient();
-        this.commonSteps = commonSteps;
+        this.authenticationUtils =
+                new AuthenticationUtils(scenarioContext);
     }
 
     @Given(
@@ -79,7 +81,7 @@ public class PartialUpdateBookingSteps {
         );
 
         String token =
-                commonSteps.resolveToken(authenticationType);
+                authenticationUtils.resolveToken(authenticationType);
 
         Response response = partialUpdateClient
                 .partiallyUpdateBooking(
@@ -95,7 +97,7 @@ public class PartialUpdateBookingSteps {
             response = partialUpdateClient
                     .partiallyUpdateBooking(
                             bookingId,
-                            commonSteps.generateValidToken(),
+                            authenticationUtils.generateValidToken(),
                             partialUpdateRequest
                     );
         }
@@ -113,7 +115,7 @@ public class PartialUpdateBookingSteps {
         Response response = partialUpdateClient
                 .partiallyUpdateBooking(
                         bookingId,
-                        commonSteps.generateValidToken(),
+                        authenticationUtils.generateValidToken(),
                         partialUpdateRequest
                 );
 
@@ -121,7 +123,7 @@ public class PartialUpdateBookingSteps {
             response = partialUpdateClient
                     .partiallyUpdateBooking(
                             bookingId,
-                            commonSteps.generateValidToken(),
+                            authenticationUtils.generateValidToken(),
                             partialUpdateRequest
                     );
         }

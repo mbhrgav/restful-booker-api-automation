@@ -374,6 +374,57 @@
     window.addEventListener("load", simplifyReportSteps);
 
 })();
+          function updateFeatureLabels() {
+
+    const labels = {
+        "Tests Passed": "Features Passed",
+        "Tests Failed": "Features Failed",
+        "Test Groups Passed": "Features Passed",
+        "Test Groups Failed": "Features Failed"
+    };
+
+    document.querySelectorAll("p, h6, span").forEach(function (element) {
+        if (element.children.length === 0) {
+            const replacement = labels[element.textContent.trim()];
+
+            if (replacement) {
+                element.textContent = replacement;
+            }
+        }
+    });
+
+    const chart = document.getElementById("parent-analysis");
+    const card = chart ? chart.closest(".card") : null;
+
+    if (!card) {
+        return;
+    }
+
+    const heading = card.querySelector(".card-title");
+
+    if (heading) {
+        heading.textContent = "Features";
+    }
+
+    const walker = document.createTreeWalker(
+        card,
+        NodeFilter.SHOW_TEXT
+    );
+
+    let node;
+
+    while ((node = walker.nextNode())) {
+        node.nodeValue = node.nodeValue.replace(
+            /\b(tests|groups)(?=\s+(passed|failed))/gi,
+            "features"
+        );
+    }
+}
+
+window.addEventListener("load", function () {
+    updateFeatureLabels();
+    setTimeout(updateFeatureLabels, 700);
+});
             ]]>
         </js>
 

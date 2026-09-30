@@ -7,23 +7,25 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.restassured.response.Response;
 import org.testng.Assert;
+import com.restfulbooker.utils.AuthenticationUtils;
 
 public class DeleteBookingSteps {
 
     private final ScenarioContext scenarioContext;
     private final DeleteBookingClient deleteBookingClient;
     private final GetBookingClient getBookingClient;
-    private final CommonSteps commonSteps;
+    private final AuthenticationUtils authenticationUtils;
 
     public DeleteBookingSteps(
-            ScenarioContext scenarioContext, CommonSteps commonSteps
+            ScenarioContext scenarioContext
     ) {
         this.scenarioContext = scenarioContext;
         this.deleteBookingClient =
                 new DeleteBookingClient();
         this.getBookingClient =
                 new GetBookingClient();
-        this.commonSteps = commonSteps;
+        this.authenticationUtils =
+                new AuthenticationUtils(scenarioContext);
     }
 
     @When(
@@ -42,7 +44,7 @@ public class DeleteBookingSteps {
         );
 
         String token =
-                commonSteps.resolveToken(authenticationType);
+                authenticationUtils.resolveToken(authenticationType);
 
         Response response = deleteBookingClient
                 .deleteBooking(
@@ -57,7 +59,7 @@ public class DeleteBookingSteps {
             response = deleteBookingClient
                     .deleteBooking(
                             bookingId,
-                            commonSteps.generateValidToken()
+                            authenticationUtils.generateValidToken()
                     );
         }
 
@@ -74,14 +76,14 @@ public class DeleteBookingSteps {
         Response response = deleteBookingClient
                 .deleteBooking(
                         bookingId,
-                        commonSteps.generateValidToken()
+                        authenticationUtils.generateValidToken()
                 );
 
         if (response.statusCode() == 403) {
             response = deleteBookingClient
                     .deleteBooking(
                             bookingId,
-                            commonSteps.generateValidToken()
+                            authenticationUtils.generateValidToken()
                     );
         }
 
@@ -124,14 +126,14 @@ public class DeleteBookingSteps {
         Response response = deleteBookingClient
                 .deleteBooking(
                         bookingId,
-                        commonSteps.generateValidToken()
+                        authenticationUtils.generateValidToken()
                 );
 
         if (response.statusCode() == 403) {
             response = deleteBookingClient
                     .deleteBooking(
                             bookingId,
-                            commonSteps.generateValidToken()
+                            authenticationUtils.generateValidToken()
                     );
         }
 

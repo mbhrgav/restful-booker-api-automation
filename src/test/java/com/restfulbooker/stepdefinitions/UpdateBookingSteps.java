@@ -12,6 +12,7 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.restassured.response.Response;
 import org.testng.Assert;
+import com.restfulbooker.utils.AuthenticationUtils;
 
 import java.util.Map;
 
@@ -25,18 +26,19 @@ public class UpdateBookingSteps {
 
     private final ScenarioContext scenarioContext;
     private final UpdateBookingClient updateBookingClient;
-    private final CommonSteps commonSteps;
+    private final AuthenticationUtils authenticationUtils;
 
     private Booking updateBookingRequest;
     private Map<String, Object> invalidUpdateRequest;
 
     public UpdateBookingSteps(
-            ScenarioContext scenarioContext, CommonSteps commonSteps
+            ScenarioContext scenarioContext
     ) {
         this.scenarioContext = scenarioContext;
         this.updateBookingClient =
                 new UpdateBookingClient();
-        this.commonSteps = commonSteps;
+        this.authenticationUtils =
+                new AuthenticationUtils(scenarioContext);
     }
 
     @Given(
@@ -100,7 +102,7 @@ public class UpdateBookingSteps {
                 "Booking ID was not available for update"
         );
 
-        String token =  commonSteps.resolveToken(authenticationType);
+        String token =  authenticationUtils.resolveToken(authenticationType);
 
         Response response = sendUpdateRequest(
                 bookingId,
@@ -117,12 +119,12 @@ public void iSendPutRequestForBookingId(
         String bookingId
 ) {
 
-    String token = commonSteps.generateValidToken();
+    String token = authenticationUtils.generateValidToken();
 
     Response response = sendUpdateRequest(bookingId, token);
 
     if (response.statusCode() == 403) {
-        String refreshedToken = commonSteps.generateValidToken();
+        String refreshedToken = authenticationUtils.generateValidToken();
         response = sendUpdateRequest(
                 bookingId,
                 refreshedToken
