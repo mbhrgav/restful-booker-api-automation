@@ -3,10 +3,8 @@ package com.restfulbooker.stepdefinitions;
 import io.cucumber.java.en.Then;
 import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
 import com.restfulbooker.models.Booking;
-import com.restfulbooker.clients.AuthClient;
 import com.restfulbooker.config.ConfigManager;
 import com.restfulbooker.context.ScenarioContext;
-import com.restfulbooker.models.AuthRequest;
 import io.restassured.response.Response;
 import org.testng.Assert;
 import com.restfulbooker.clients.CreateBookingClient;
@@ -14,71 +12,16 @@ import com.restfulbooker.utils.BookingDataMapper;
 import com.restfulbooker.utils.ExcelReader;
 import io.cucumber.java.en.Given;
 import java.util.Map;
-import java.util.Locale;
 
 public class CommonSteps {
 
     private final ScenarioContext scenarioContext;
-    private final AuthClient authClient;
 
     private final CreateBookingClient createBookingClient;
 
     public CommonSteps(ScenarioContext scenarioContext) {
         this.scenarioContext = scenarioContext;
-        this.authClient = new AuthClient();
         this.createBookingClient = new CreateBookingClient();
-    }
-
-    public String resolveToken(String authenticationType) {
-
-        if (authenticationType == null) {
-            throw new IllegalArgumentException(
-                    "Authentication type must not be null"
-            );
-        }
-
-        return switch (
-                authenticationType.trim().toLowerCase(Locale.ROOT)
-                ) {
-            case "valid" -> generateValidToken();
-            case "missing" -> null;
-            case "invalid" -> "invalid-token";
-            default -> throw new IllegalArgumentException(
-                    "Unsupported authentication type: "
-                            + authenticationType
-            );
-        };
-    }
-
-    public String generateValidToken() {
-
-        AuthRequest authRequest = new AuthRequest(
-                ConfigManager.getProperty("username"),
-                ConfigManager.getProperty("password")
-        );
-
-        Response authResponse = authClient.createToken(authRequest);
-
-        authResponse.then()
-                .log()
-                .ifValidationFails()
-                .statusCode(200);
-
-        String token = authResponse.jsonPath().getString("token");
-
-        Assert.assertNotNull(
-                token,
-                "Authentication token must not be null"
-        );
-
-        Assert.assertFalse(
-                token.isBlank(),
-                "Authentication token must not be blank"
-        );
-
-        scenarioContext.setToken(token);
-
-        return token;
     }
 
     @Given("an existing booking is created using Excel test case {string}")
